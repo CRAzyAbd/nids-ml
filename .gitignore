@@ -1,0 +1,30 @@
+# Virtual environment
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs and data (can be large)
+logs/*.log
+captured_data/*.csv
+data/*.csv
+data/*.gz
+data/*.zip
+
+# Environment variables
+.env
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+
+# Model files (will be large in Phase 4)
+models/*.pkl
+models/*.joblib
