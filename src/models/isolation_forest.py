@@ -59,7 +59,7 @@ class NIDSIsolationForest:
 
     def __init__(self,
                  n_estimators: int = 100,
-                 contamination: float = 0.05,
+                 contamination: float = 0.15,
                  max_samples: str = "auto",
                  random_state: int = RANDOM_STATE):
         """

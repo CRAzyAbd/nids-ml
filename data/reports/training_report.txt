@@ -1,0 +1,32 @@
+=================================================================
+  NIDS — Phase 4 Training Report
+=================================================================
+
+── RANDOM FOREST (Supervised Multiclass) ─────────────────
+  Classes        : ['BENIGN', 'Bot', 'BruteForce', 'DDoS', 'DoS', 'PortScan']
+  Accuracy       : 0.9560 (95.60%)
+  F1 (macro)     : 0.9019
+  F1 (weighted)  : 0.9592
+
+  Per-class Report:
+              precision    recall  f1-score   support
+
+      BENIGN       1.00      0.93      0.96     19985
+         Bot       0.44      0.98      0.61       397
+  BruteForce       0.81      0.99      0.89      2775
+        DDoS       1.00      1.00      1.00      3999
+         DoS       0.93      0.99      0.96      3945
+    PortScan       1.00      1.00      1.00      4049
+
+    accuracy                           0.96     35150
+   macro avg       0.86      0.98      0.90     35150
+weighted avg       0.97      0.96      0.96     35150
+
+
+── ISOLATION FOREST (Unsupervised Anomaly Detection) ──────
+  Detection Rate : 0.3487 (34.9% of attacks caught)
+  False Alarm    : 0.1486 (14.9% of benign flagged)
+  Precision      : 0.6403
+  TP=5288 TN=17015 FP=2970 FN=9877
+
+=================================================================

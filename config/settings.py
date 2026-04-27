@@ -76,3 +76,9 @@ ENCODER_PATH      = os.path.join(MODELS_DIR, "label_encoder.joblib")
 RF_MODEL_PATH     = os.path.join(MODELS_DIR, "random_forest.joblib")
 ISO_MODEL_PATH    = os.path.join(MODELS_DIR, "isolation_forest.joblib")
 FEATURE_COLS_PATH = os.path.join(MODELS_DIR, "feature_columns.joblib")
+
+# ─── Isolation Forest Tuning ─────────────────────────────────────
+# contamination = expected fraction of anomalies in the dataset
+# Higher value = more sensitive = catches more attacks but more false alarms
+# 0.15 means "expect up to 15% of flows to be anomalous"
+IF_CONTAMINATION = 0.15

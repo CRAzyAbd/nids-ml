@@ -104,9 +104,9 @@ def main():
     # ── Train Isolation Forest ────────────────────────────────────
     logger.info("\n[4/6] Training Isolation Forest...")
     iso = NIDSIsolationForest(
-        n_estimators=100,
-        contamination=0.05,
-    )
+    n_estimators=100,
+    contamination=0.15,
+)
     iso.train(X_train, y_train_binary, feature_columns)
 
     # ── Evaluate Isolation Forest ─────────────────────────────────
