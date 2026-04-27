@@ -1,0 +1,26 @@
+NIDS - EDA
+=================================================================
+Shape: 178,017 rows x 79 cols
+
+1. Class Distribution
+  BENIGN                100,000   56.2%  ████████████████████████████
+  DoS                    20,000   11.2%  █████
+  DDoS                   20,000   11.2%  █████
+  PortScan               20,000   11.2%  █████
+  BruteForce             13,835    7.8%  ███
+  UNKNOWN                 2,180    1.2%  
+  Bot                     1,966    1.1%  
+  Infiltration               36    0.0%  
+  Chart → /home/hackffee/Desktop/Summer Porjects/nids-project/data/reports/01_class_distribution.png
+
+2. Missing & Infinity Values
+  Inf: 253  NaN: 73
+
+3. Correlation Heatmap
+  Chart → /home/hackffee/Desktop/Summer Porjects/nids-project/data/reports/02_correlation_heatmap.png
+
+4. Feature Distributions
+  Chart → /home/hackffee/Desktop/Summer Porjects/nids-project/data/reports/03_feature_distributions.png
+
+5. Binary Balance
+  BENIGN: 100,000 (56.2%)  ATTACK: 78,017 (43.8%)

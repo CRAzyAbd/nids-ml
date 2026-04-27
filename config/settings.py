@@ -1,7 +1,6 @@
 # config/settings.py
 """
 Central configuration for the NIDS project.
-Change values here — never hardcode them in other files.
 """
 
 import os
@@ -10,28 +9,16 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ─── Network Interface ───────────────────────────────────────────
-# Change this to YOUR interface name (find it with: ip link show)
-INTERFACE = "wlo1"
-
-CAPTURE_FILTER = ""      # BPF filter: "tcp", "port 80", "" = everything
-PACKET_COUNT = 0         # 0 = capture forever
+INTERFACE      = "ens33"   # ← change to your interface (ip link show)
+CAPTURE_FILTER = ""
+PACKET_COUNT   = 0
 
 # ─── Flow Tracking ───────────────────────────────────────────────
-# A "flow" is a conversation between two endpoints (5-tuple).
-# We expire a flow if no packet has been seen for this many seconds.
-FLOW_TIMEOUT = 120       # seconds — TCP connections usually timeout here
+FLOW_TIMEOUT          = 120
+FLOW_EXPORT_INTERVAL  = 60
+MIN_PACKETS_PER_FLOW  = 2
 
-# After this many seconds, we force-export all active flows and clear them.
-# This keeps memory bounded during long captures.
-FLOW_EXPORT_INTERVAL = 60   # seconds
-
-# Minimum packets a flow must have before we bother computing features.
-# A flow with 1 packet has no statistics (no inter-arrival time, no std dev).
-MIN_PACKETS_PER_FLOW = 2
-
-# ─── Well-Known Ports ────────────────────────────────────────────
-# We classify destination ports into service categories.
-# This gives ML models a semantic signal instead of raw port numbers.
+# ─── Port Categories ─────────────────────────────────────────────
 PORT_CATEGORIES = {
     "web":      {80, 443, 8080, 8443},
     "dns":      {53},
@@ -46,14 +33,46 @@ PORT_CATEGORIES = {
 }
 
 # ─── Logging ─────────────────────────────────────────────────────
-LOG_DIR = os.path.join(BASE_DIR, "logs")
-LOG_FILE = os.path.join(LOG_DIR, "nids.log")
+LOG_DIR   = os.path.join(BASE_DIR, "logs")
+LOG_FILE  = os.path.join(LOG_DIR, "nids.log")
 LOG_LEVEL = "INFO"
 
-# ─── Output Directories ──────────────────────────────────────────
+# ─── Capture Output ──────────────────────────────────────────────
 CAPTURED_DATA_DIR = os.path.join(BASE_DIR, "captured_data")
 FLOWS_DATA_DIR    = os.path.join(BASE_DIR, "captured_data", "flows")
 
-# ─── Display Settings ────────────────────────────────────────────
-STATS_INTERVAL = 50   # Print packet stats every N packets
-FLOW_DISPLAY_INTERVAL = 10  # Print completed flow summary every N flows
+# ─── Display ─────────────────────────────────────────────────────
+STATS_INTERVAL        = 50
+FLOW_DISPLAY_INTERVAL = 10
+
+# ─── Dataset Paths (Phase 3) ─────────────────────────────────────
+DATA_DIR           = os.path.join(BASE_DIR, "data")
+RAW_DATA_DIR       = os.path.join(DATA_DIR, "raw", "MachineLearningCVE")
+PROCESSED_DATA_DIR = os.path.join(DATA_DIR, "processed")
+REPORTS_DIR        = os.path.join(DATA_DIR, "reports")
+
+# All 8 files from the zip
+CICIDS_FILES = [
+    "Monday-WorkingHours.pcap_ISCX.csv",
+    "Tuesday-WorkingHours.pcap_ISCX.csv",
+    "Wednesday-workingHours.pcap_ISCX.csv",
+    "Friday-WorkingHours-Morning.pcap_ISCX.csv",
+    "Friday-WorkingHours-Afternoon-DDos.pcap_ISCX.csv",
+    "Friday-WorkingHours-Afternoon-PortScan.pcap_ISCX.csv",
+    "Thursday-WorkingHours-Morning-WebAttacks.pcap_ISCX.csv",
+    "Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv",
+]
+
+# ─── Preprocessing (Phase 3) ─────────────────────────────────────
+TEST_SIZE        = 0.20
+RANDOM_STATE     = 42
+MAX_BENIGN_ROWS  = 100_000
+MAX_ATTACK_ROWS  = 20_000
+
+# ─── Models (Phase 4) ────────────────────────────────────────────
+MODELS_DIR        = os.path.join(BASE_DIR, "models")
+SCALER_PATH       = os.path.join(MODELS_DIR, "scaler.joblib")
+ENCODER_PATH      = os.path.join(MODELS_DIR, "label_encoder.joblib")
+RF_MODEL_PATH     = os.path.join(MODELS_DIR, "random_forest.joblib")
+ISO_MODEL_PATH    = os.path.join(MODELS_DIR, "isolation_forest.joblib")
+FEATURE_COLS_PATH = os.path.join(MODELS_DIR, "feature_columns.joblib")
