@@ -28,3 +28,8 @@ Thumbs.db
 # Model files (will be large in Phase 4)
 models/*.pkl
 models/*.joblib
+data/raw/
+data/processed/
+models/*.joblib
+models/*.pkl
+captured_data/
