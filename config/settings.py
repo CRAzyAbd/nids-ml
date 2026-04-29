@@ -9,7 +9,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # ─── Network Interface ───────────────────────────────────────────
-INTERFACE      = "ens33"   # ← change to your interface (ip link show)
+INTERFACE      = "wlo1"   # ← change to your interface (ip link show)
 CAPTURE_FILTER = ""
 PACKET_COUNT   = 0
 
@@ -81,4 +81,4 @@ FEATURE_COLS_PATH = os.path.join(MODELS_DIR, "feature_columns.joblib")
 # contamination = expected fraction of anomalies in the dataset
 # Higher value = more sensitive = catches more attacks but more false alarms
 # 0.15 means "expect up to 15% of flows to be anomalous"
-IF_CONTAMINATION = 0.15
+IF_CONTAMINATION = 0.05

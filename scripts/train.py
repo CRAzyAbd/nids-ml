@@ -105,7 +105,7 @@ def main():
     logger.info("\n[4/6] Training Isolation Forest...")
     iso = NIDSIsolationForest(
     n_estimators=100,
-    contamination=0.15,
+    contamination=0.05,
 )
     iso.train(X_train, y_train_binary, feature_columns)
 

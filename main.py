@@ -4,6 +4,7 @@ NIDS — Network Intrusion Detection System
 
 Usage:
     sudo venv/bin/python3 main.py --mode capture
+    sudo venv/bin/python3 main.py --mode detect
     python3 main.py --mode preprocess
     python3 main.py --mode eda
     python3 main.py --mode train
@@ -27,21 +28,22 @@ def parse_arguments():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Modes:
-  capture     Live packet capture + flow feature extraction (needs sudo)
+  capture     Live packet capture + flow feature extraction
+  detect      Live packet capture + real-time ML detection  ← NEW
   preprocess  Load CICIDS-2017 dataset and preprocess for ML
   eda         Run exploratory data analysis
   train       Train Random Forest + Isolation Forest models
 
 Examples:
+  sudo venv/bin/python3 main.py --mode detect
+  sudo venv/bin/python3 main.py --mode detect --interface wlan0
   sudo venv/bin/python3 main.py --mode capture
-  python3 main.py --mode preprocess
-  python3 main.py --mode eda
   python3 main.py --mode train
         """
     )
-    parser.add_argument("--mode", "-m", type=str, default="capture",
-                        choices=["capture", "preprocess", "eda", "train"],
-                        help="Operating mode")
+    parser.add_argument("--mode", "-m", type=str, default="detect",
+                        choices=["capture", "detect", "preprocess", "eda", "train"],
+                        help="Operating mode (default: detect)")
     parser.add_argument("--interface", "-i", type=str, default=INTERFACE)
     parser.add_argument("--filter",    "-f", type=str, default="")
     parser.add_argument("--count",     "-c", type=int, default=0)
@@ -50,22 +52,49 @@ Examples:
 
 def check_root():
     if os.geteuid() != 0:
-        logger.error("Capture mode requires root.")
-        logger.error("Run: sudo venv/bin/python3 main.py --mode capture")
+        logger.error("Capture/detect modes require root.")
+        logger.error("Run: sudo venv/bin/python3 main.py --mode detect")
         sys.exit(1)
 
 
 def main():
     args = parse_arguments()
 
-    if args.mode == "capture":
+    if args.mode in ("capture", "detect"):
         check_root()
-        from src.sniffer.packet_capture import PacketCapture
-        PacketCapture(
-            interface=args.interface,
-            packet_filter=args.filter,
-            packet_count=args.count,
-        ).start()
+
+        if args.mode == "detect":
+            # Load models first
+            from src.detection.detector     import RealTimeDetector
+            from src.detection.alert_engine import AlertEngine
+
+            detector     = RealTimeDetector()
+            alert_engine = AlertEngine()
+
+            if not detector.load_models():
+                logger.error("Cannot start detection — models missing.")
+                logger.error("Run: python3 main.py --mode train")
+                sys.exit(1)
+
+            from src.sniffer.packet_capture import PacketCapture
+            sniffer = PacketCapture(
+                interface=args.interface,
+                packet_filter=args.filter,
+                packet_count=args.count,
+                mode="detect",
+                detector=detector,
+                alert_engine=alert_engine,
+            )
+        else:
+            from src.sniffer.packet_capture import PacketCapture
+            sniffer = PacketCapture(
+                interface=args.interface,
+                packet_filter=args.filter,
+                packet_count=args.count,
+                mode="capture",
+            )
+
+        sniffer.start()
 
     elif args.mode == "preprocess":
         from scripts.preprocess_data import main as run
