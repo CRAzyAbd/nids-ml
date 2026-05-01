@@ -82,3 +82,6 @@ FEATURE_COLS_PATH = os.path.join(MODELS_DIR, "feature_columns.joblib")
 # Higher value = more sensitive = catches more attacks but more false alarms
 # 0.15 means "expect up to 15% of flows to be anomalous"
 IF_CONTAMINATION = 0.05
+
+# ─── Dashboard ────────────────────────────────────────────────────
+DASHBOARD_PORT = 5001

@@ -24,9 +24,9 @@ weighted avg       0.97      0.96      0.96     35150
 
 
 ── ISOLATION FOREST (Unsupervised Anomaly Detection) ──────
-  Detection Rate : 0.3487 (34.9% of attacks caught)
-  False Alarm    : 0.1486 (14.9% of benign flagged)
-  Precision      : 0.6403
-  TP=5288 TN=17015 FP=2970 FN=9877
+  Detection Rate : 0.2005 (20.0% of attacks caught)
+  False Alarm    : 0.0497 (5.0% of benign flagged)
+  Precision      : 0.7536
+  TP=3040 TN=18991 FP=994 FN=12125
 
 =================================================================

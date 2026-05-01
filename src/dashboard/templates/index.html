@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NIDS — Live Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:         #f0f4f8;
+  --surface:    #ffffff;
+  --surface2:   #f8fafc;
+  --border:     #e2e8f0;
+  --border2:    #cbd5e1;
+  --green:      #059669;
+  --green-light:#d1fae5;
+  --red:        #dc2626;
+  --red-light:  #fee2e2;
+  --amber:      #d97706;
+  --amber-light:#fef3c7;
+  --blue:       #2563eb;
+  --blue-light: #dbeafe;
+  --purple:     #7c3aed;
+  --purple-light:#ede9fe;
+  --text:       #0f172a;
+  --text2:      #475569;
+  --text3:      #94a3b8;
+  --font:       'Inter', sans-serif;
+  --mono:       'JetBrains Mono', monospace;
+  --radius:     12px;
+  --shadow:     0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md:  0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.06);
+}
+
+html,body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh}
+
+/* ── Header ─────────────────────────────────────── */
+header{
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  padding:0 28px;
+  height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+  box-shadow:var(--shadow);
+}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,#2563eb,#7c3aed);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;color:white;
+  box-shadow:0 2px 8px rgba(37,99,235,0.3);
+}
+.logo-text h1{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-0.3px}
+.logo-text p{font-size:11px;color:var(--text3);letter-spacing:0.5px;text-transform:uppercase}
+.header-right{display:flex;align-items:center;gap:16px}
+.live-badge{
+  display:flex;align-items:center;gap:6px;
+  background:var(--green-light);
+  color:var(--green);
+  font-size:11px;font-weight:600;
+  padding:4px 10px;border-radius:20px;
+  letter-spacing:0.5px;
+}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.5;transform:scale(0.8)}}
+.uptime-badge{font-family:var(--mono);font-size:12px;color:var(--text2);background:var(--surface2);padding:4px 10px;border-radius:8px;border:1px solid var(--border)}
+
+/* ── Layout ─────────────────────────────────────── */
+main{padding:24px 28px;display:flex;flex-direction:column;gap:20px}
+
+/* ── Stat Cards ─────────────────────────────────── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:var(--shadow);
+  display:flex;flex-direction:column;gap:4px;
+  transition:box-shadow 0.2s,transform 0.2s;
+  position:relative;overflow:hidden;
+}
+.stat-card:hover{box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.stat-card::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+  border-radius:0 0 var(--radius) var(--radius);
+}
+.stat-card.c-green::after{background:var(--green)}
+.stat-card.c-red::after{background:var(--red)}
+.stat-card.c-blue::after{background:var(--blue)}
+.stat-card.c-purple::after{background:var(--purple)}
+.stat-icon{font-size:20px;margin-bottom:6px}
+.stat-label{font-size:11px;font-weight:500;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px}
+.stat-value{font-size:32px;font-weight:700;font-family:var(--mono);line-height:1.1}
+.stat-card.c-green .stat-value{color:var(--green)}
+.stat-card.c-red   .stat-value{color:var(--red)}
+.stat-card.c-blue  .stat-value{color:var(--blue)}
+.stat-card.c-purple .stat-value{color:var(--purple)}
+.stat-sub{font-size:11px;color:var(--text3);margin-top:2px}
+
+/* ── Cards ───────────────────────────────────────── */
+.row{display:grid;gap:14px}
+.row-3{grid-template-columns:1fr 1fr 1fr}
+.row-2{grid-template-columns:1fr 1fr}
+
+.card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:var(--shadow);
+}
+.card-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:16px;
+}
+.card-title{
+  font-size:13px;font-weight:600;color:var(--text);
+  display:flex;align-items:center;gap:8px;
+}
+.card-title-dot{width:8px;height:8px;border-radius:50%}
+.card-title-dot.green{background:var(--green)}
+.card-title-dot.red{background:var(--red)}
+.card-title-dot.blue{background:var(--blue)}
+.card-title-dot.purple{background:var(--purple)}
+.card-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:20px}
+.card-badge.green{background:var(--green-light);color:var(--green)}
+.card-badge.red{background:var(--red-light);color:var(--red)}
+
+.chart-wrap{position:relative;height:200px}
+
+/* ── Alert Feed ─────────────────────────────────── */
+.feed{max-height:340px;overflow-y:auto;display:flex;flex-direction:column;gap:8px}
+.feed::-webkit-scrollbar{width:4px}
+.feed::-webkit-scrollbar-track{background:transparent}
+.feed::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.alert-item{
+  display:flex;align-items:flex-start;gap:10px;
+  padding:10px 12px;
+  border-radius:8px;
+  border:1px solid var(--border);
+  animation:slideDown 0.3s ease;
+  cursor:default;
+  transition:background 0.15s;
+}
+.alert-item:hover{background:var(--surface2)}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.alert-item.ATTACK{border-left:3px solid var(--red);background:rgba(220,38,38,0.03)}
+.alert-item.ANOMALY{border-left:3px solid var(--purple);background:rgba(124,58,237,0.03)}
+.alert-item.SUSPICIOUS{border-left:3px solid var(--amber);background:rgba(217,119,6,0.03)}
+.alert-emoji{font-size:16px;flex-shrink:0;margin-top:1px}
+.alert-body{flex:1;min-width:0}
+.alert-top{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.alert-label-text{font-size:12px;font-weight:600}
+.alert-label-text.ATTACK{color:var(--red)}
+.alert-label-text.ANOMALY{color:var(--purple)}
+.alert-label-text.SUSPICIOUS{color:var(--amber)}
+.alert-class{font-size:11px;color:var(--text2)}
+.alert-flow{font-size:10px;color:var(--text3);font-family:var(--mono);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alert-right{text-align:right;flex-shrink:0}
+.alert-conf{font-size:12px;font-weight:700;color:var(--blue)}
+.alert-time{font-size:10px;color:var(--text3);margin-top:2px}
+
+.empty-state{text-align:center;padding:40px 20px;color:var(--text3)}
+.empty-state .empty-icon{font-size:32px;margin-bottom:8px}
+.empty-state p{font-size:12px}
+
+/* ── Flow Table ─────────────────────────────────── */
+.table-wrap{max-height:340px;overflow-y:auto}
+.table-wrap::-webkit-scrollbar{width:4px}
+.table-wrap::-webkit-scrollbar-track{background:transparent}
+.table-wrap::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{
+  text-align:left;padding:8px 10px;
+  font-size:10px;font-weight:600;color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.5px;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--surface);
+}
+td{padding:8px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2)}
+.badge{
+  display:inline-flex;align-items:center;gap:4px;
+  padding:2px 8px;border-radius:20px;
+  font-size:10px;font-weight:600;white-space:nowrap;
+}
+.badge.BENIGN    {background:var(--green-light);color:var(--green)}
+.badge.ATTACK    {background:var(--red-light);color:var(--red)}
+.badge.ANOMALY   {background:var(--purple-light);color:var(--purple)}
+.badge.SUSPICIOUS{background:var(--amber-light);color:var(--amber)}
+.td-flow{font-family:var(--mono);font-size:10px;color:var(--text3);max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.td-conf{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--blue)}
+
+/* ── Footer ─────────────────────────────────────── */
+footer{
+  background:var(--surface);border-top:1px solid var(--border);
+  padding:8px 28px;
+  display:flex;align-items:center;gap:24px;
+  font-size:11px;color:var(--text3);
+}
+footer span{color:var(--text2);font-weight:500}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">🛡️</div>
+    <div class="logo-text">
+      <h1>NIDS Dashboard</h1>
+      <p>Network Intrusion Detection System</p>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+    <div class="uptime-badge" id="uptime">00:00:00</div>
+  </div>
+</header>
+
+<main>
+  <!-- Stat Cards -->
+  <div class="stat-grid">
+    <div class="stat-card c-blue">
+      <div class="stat-icon">📦</div>
+      <div class="stat-label">Packets Captured</div>
+      <div class="stat-value" id="stat-packets">0</div>
+      <div class="stat-sub" id="stat-pps">0 pkt/s</div>
+    </div>
+    <div class="stat-card c-purple">
+      <div class="stat-icon">🔀</div>
+      <div class="stat-label">Flows Analyzed</div>
+      <div class="stat-value" id="stat-flows">0</div>
+      <div class="stat-sub" id="stat-fps">0 flows/min</div>
+    </div>
+    <div class="stat-card c-red">
+      <div class="stat-icon">🚨</div>
+      <div class="stat-label">Alerts Fired</div>
+      <div class="stat-value" id="stat-alerts">0</div>
+      <div class="stat-sub" id="stat-alert-rate">0.0% alert rate</div>
+    </div>
+    <div class="stat-card c-green">
+      <div class="stat-icon">✅</div>
+      <div class="stat-label">Benign Traffic</div>
+      <div class="stat-value" id="stat-benign">--%</div>
+      <div class="stat-sub">of all flows</div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row row-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-title-dot blue"></div>Protocol Mix</div>
+        <div class="card-badge blue" id="proto-total">0 pkts</div>
+      </div>
+      <div class="chart-wrap"><canvas id="proto-chart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-title-dot green"></div>Traffic Classification</div>
+        <div class="card-badge green" id="label-total">0 flows</div>
+      </div>
+      <div class="chart-wrap"><canvas id="label-chart"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-title-dot red"></div>Alert Timeline</div>
+        <div class="card-badge red" id="timeline-label">last 60s</div>
+      </div>
+      <div class="chart-wrap"><canvas id="timeline-chart"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Alert Feed + Flow Table -->
+  <div class="row row-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-title-dot red"></div>Live Alert Feed</div>
+        <div class="card-badge red" id="alert-count-badge">0 alerts</div>
+      </div>
+      <div class="feed" id="alert-feed">
+        <div class="empty-state">
+          <div class="empty-icon">🔍</div>
+          <p>Monitoring traffic...<br>Alerts will appear here</p>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title"><div class="card-title-dot purple"></div>Recent Flows</div>
+        <div class="card-badge green" id="flow-count-badge">0 flows</div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>Time</th><th>Classification</th><th>Conf</th><th>Flow</th></tr>
+          </thead>
+          <tbody id="flow-tbody">
+            <tr><td colspan="4" style="text-align:center;color:var(--text3);padding:32px">
+              Waiting for flows...
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div>Model: <span>Random Forest + Isolation Forest</span></div>
+  <div>Dataset: <span>CICIDS-2017</span></div>
+  <div>RF Accuracy: <span>95.60%</span></div>
+  <div>IF False Alarm: <span>5.0%</span></div>
+  <div style="margin-left:auto;font-family:var(--mono)" id="clock">--:--:--</div>
+</footer>
+
+<script>
+const socket = io();
+
+// Chart defaults
+Chart.defaults.font.family = "'Inter', sans-serif";
+Chart.defaults.color = '#94a3b8';
+
+const PALETTE = {
+  BENIGN:'#059669',DoS:'#dc2626',DDoS:'#b91c1c',
+  PortScan:'#d97706',BruteForce:'#7c3aed',WebAttack:'#2563eb',
+  Bot:'#0891b2',TCP:'#2563eb',UDP:'#7c3aed',ICMP:'#d97706',OTHER:'#94a3b8',
+};
+const C = k => PALETTE[k] || '#94a3b8';
+const CA = (k,a) => { const c=C(k); return c+'33'; };
+
+// Protocol Chart
+const protoChart = new Chart(document.getElementById('proto-chart'),{
+  type:'doughnut',
+  data:{labels:[],datasets:[{data:[],backgroundColor:[],borderWidth:2,borderColor:'#ffffff',hoverBorderWidth:0}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,animation:{duration:400},
+    plugins:{
+      legend:{position:'right',labels:{boxWidth:10,padding:12,font:{size:11}}},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed.toLocaleString()}`}}
+    },
+    cutout:'60%',
+  }
+});
+
+// Label Chart
+const labelChart = new Chart(document.getElementById('label-chart'),{
+  type:'doughnut',
+  data:{labels:[],datasets:[{data:[],backgroundColor:[],borderWidth:2,borderColor:'#ffffff',hoverBorderWidth:0}]},
+  options:{
+    responsive:true,maintainAspectRatio:false,animation:{duration:400},
+    plugins:{
+      legend:{position:'right',labels:{boxWidth:10,padding:12,font:{size:11}}},
+      tooltip:{callbacks:{label:ctx=>`${ctx.label}: ${ctx.parsed.toLocaleString()}`}}
+    },
+    cutout:'60%',
+  }
+});
+
+// Timeline
+const TL_BUCKETS = 12;
+let tlData = Array(TL_BUCKETS).fill(0);
+let lastBucket = Date.now();
+
+const timelineChart = new Chart(document.getElementById('timeline-chart'),{
+  type:'bar',
+  data:{
+    labels:Array(TL_BUCKETS).fill('').map((_,i)=>i===TL_BUCKETS-1?'now':`-${(TL_BUCKETS-1-i)*5}s`),
+    datasets:[{
+      label:'Alerts',data:[...tlData],
+      backgroundColor:tlData.map((_,i)=>i===TL_BUCKETS-1?'rgba(220,38,38,0.9)':'rgba(220,38,38,0.35)'),
+      borderColor:'rgba(220,38,38,0.8)',borderWidth:1,borderRadius:4,
+    }]
+  },
+  options:{
+    responsive:true,maintainAspectRatio:false,animation:false,
+    plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.parsed.y} alerts`}}},
+    scales:{
+      x:{grid:{display:false},ticks:{font:{size:9}}},
+      y:{beginAtZero:true,ticks:{stepSize:1,font:{size:10}},grid:{color:'rgba(0,0,0,0.05)'}},
+    }
+  }
+});
+
+function addTimelineAlert(){
+  const now=Date.now();
+  if(now-lastBucket>=5000){
+    tlData.push(0);if(tlData.length>TL_BUCKETS)tlData.shift();
+    lastBucket=now;
+  }
+  tlData[tlData.length-1]++;
+  const colors=tlData.map((_,i)=>i===tlData.length-1?'rgba(220,38,38,0.9)':'rgba(220,38,38,0.35)');
+  timelineChart.data.datasets[0].data=[...tlData];
+  timelineChart.data.datasets[0].backgroundColor=colors;
+  timelineChart.update('none');
+}
+
+// Stats update
+let alertTotal=0, flowTotal=0;
+function updateStats(d){
+  document.getElementById('stat-packets').textContent=d.total_packets.toLocaleString();
+  document.getElementById('stat-flows').textContent=d.total_flows.toLocaleString();
+  document.getElementById('stat-alerts').textContent=d.total_alerts.toLocaleString();
+  document.getElementById('stat-pps').textContent=`${d.packets_per_sec} pkt/s`;
+  document.getElementById('stat-fps').textContent=`${d.flows_per_min} flows/min`;
+  document.getElementById('stat-alert-rate').textContent=`${d.alert_rate}% alert rate`;
+  document.getElementById('stat-benign').textContent=`${d.benign_pct}%`;
+  document.getElementById('proto-total').textContent=`${d.total_packets.toLocaleString()} pkts`;
+  document.getElementById('label-total').textContent=`${d.total_flows.toLocaleString()} flows`;
+  document.getElementById('alert-count-badge').textContent=`${d.total_alerts} alerts`;
+  document.getElementById('flow-count-badge').textContent=`${d.total_flows} flows`;
+  alertTotal=d.total_alerts; flowTotal=d.total_flows;
+
+  // Protocol donut
+  if(Object.keys(d.protocol_counts).length){
+    const e=Object.entries(d.protocol_counts).sort((a,b)=>b[1]-a[1]);
+    protoChart.data.labels=e.map(([k])=>k);
+    protoChart.data.datasets[0].data=e.map(([,v])=>v);
+    protoChart.data.datasets[0].backgroundColor=e.map(([k])=>C(k));
+    protoChart.update('none');
+  }
+
+  // Label donut
+  if(Object.keys(d.label_counts).length){
+    const e=Object.entries(d.label_counts).sort((a,b)=>b[1]-a[1]);
+    labelChart.data.labels=e.map(([k])=>k);
+    labelChart.data.datasets[0].data=e.map(([,v])=>v);
+    labelChart.data.datasets[0].backgroundColor=e.map(([k])=>C(k));
+    labelChart.update('none');
+  }
+}
+
+// Alert
+function addAlert(a){
+  addTimelineAlert();
+  const feed=document.getElementById('alert-feed');
+  const empty=feed.querySelector('.empty-state');
+  if(empty)empty.remove();
+
+  const emoji=a.alert_level==='ATTACK'?'🚨':a.alert_level==='ANOMALY'?'⚠️':'❓';
+  const el=document.createElement('div');
+  el.className=`alert-item ${a.alert_level}`;
+  el.innerHTML=`
+    <div class="alert-emoji">${emoji}</div>
+    <div class="alert-body">
+      <div class="alert-top">
+        <span class="alert-label-text ${a.alert_level}">${a.alert_level}</span>
+        <span class="alert-class">— ${a.rf_label}</span>
+      </div>
+      <div class="alert-flow">${a.flow}</div>
+    </div>
+    <div class="alert-right">
+      <div class="alert-conf">${a.confidence}%</div>
+      <div class="alert-time">${a.timestamp}</div>
+    </div>`;
+  feed.insertBefore(el,feed.firstChild);
+  while(feed.children.length>50)feed.removeChild(feed.lastChild);
+}
+
+// Flow row
+function addFlow(f){
+  const tbody=document.getElementById('flow-tbody');
+  if(tbody.querySelector('td[colspan]'))tbody.innerHTML='';
+
+  const level=f.alert_level||'BENIGN';
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td style="color:var(--text3);font-family:var(--mono);font-size:10px">${f.timestamp}</td>
+    <td><span class="badge ${level}">${f.label}</span></td>
+    <td class="td-conf">${f.confidence}%</td>
+    <td class="td-flow" title="${f.flow}">${f.flow}</td>`;
+  tbody.insertBefore(tr,tbody.firstChild);
+  while(tbody.children.length>30)tbody.removeChild(tbody.lastChild);
+}
+
+socket.on('stats_update',updateStats);
+socket.on('alert',addAlert);
+socket.on('flow',addFlow);
+socket.on('connect',()=>console.log('Connected to NIDS'));
+
+// Clock + uptime
+const t0=Date.now();
+setInterval(()=>{
+  const s=Math.floor((Date.now()-t0)/1000);
+  const h=String(Math.floor(s/3600)).padStart(2,'0');
+  const m=String(Math.floor(s%3600/60)).padStart(2,'0');
+  const sec=String(s%60).padStart(2,'0');
+  document.getElementById('uptime').textContent=`${h}:${m}:${sec}`;
+  document.getElementById('clock').textContent=new Date().toLocaleTimeString('en-US',{hour12:false});
+},1000);
+</script>
+</body>
+</html>

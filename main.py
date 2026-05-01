@@ -3,11 +3,12 @@
 NIDS — Network Intrusion Detection System
 
 Usage:
-    sudo venv/bin/python3 main.py --mode capture
+    sudo venv/bin/python3 main.py --mode dashboard
     sudo venv/bin/python3 main.py --mode detect
+    sudo venv/bin/python3 main.py --mode capture
+    python3 main.py --mode train
     python3 main.py --mode preprocess
     python3 main.py --mode eda
-    python3 main.py --mode train
 """
 
 import argparse
@@ -17,7 +18,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from src.utils.logger import setup_logger
-from config.settings import LOG_FILE, LOG_LEVEL, INTERFACE
+from config.settings import LOG_FILE, LOG_LEVEL, INTERFACE, DASHBOARD_PORT
 
 logger = setup_logger("main", LOG_FILE, LOG_LEVEL)
 
@@ -28,73 +29,108 @@ def parse_arguments():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Modes:
-  capture     Live packet capture + flow feature extraction
-  detect      Live packet capture + real-time ML detection  ← NEW
-  preprocess  Load CICIDS-2017 dataset and preprocess for ML
-  eda         Run exploratory data analysis
-  train       Train Random Forest + Isolation Forest models
+  dashboard  Live web dashboard at http://localhost:5001  (default)
+  detect     Live detection with terminal alerts
+  capture    Raw packet capture to CSV
+  train      Train Random Forest + Isolation Forest models
+  preprocess Load CICIDS-2017 dataset and preprocess for ML
+  eda        Exploratory data analysis on the dataset
 
 Examples:
+  sudo venv/bin/python3 main.py
+  sudo venv/bin/python3 main.py --mode dashboard
+  sudo venv/bin/python3 main.py --mode dashboard --port 8080
   sudo venv/bin/python3 main.py --mode detect
   sudo venv/bin/python3 main.py --mode detect --interface wlan0
-  sudo venv/bin/python3 main.py --mode capture
   python3 main.py --mode train
+  python3 main.py --mode preprocess
+  python3 main.py --mode eda
         """
     )
-    parser.add_argument("--mode", "-m", type=str, default="detect",
-                        choices=["capture", "detect", "preprocess", "eda", "train"],
-                        help="Operating mode (default: detect)")
-    parser.add_argument("--interface", "-i", type=str, default=INTERFACE)
-    parser.add_argument("--filter",    "-f", type=str, default="")
-    parser.add_argument("--count",     "-c", type=int, default=0)
+    parser.add_argument(
+        "--mode", "-m",
+        type=str,
+        default="dashboard",
+        choices=["capture", "detect", "dashboard", "preprocess", "eda", "train"],
+        help="Operating mode (default: dashboard)"
+    )
+    parser.add_argument(
+        "--interface", "-i",
+        type=str,
+        default=INTERFACE,
+        help=f"Network interface (default: {INTERFACE})"
+    )
+    parser.add_argument(
+        "--filter", "-f",
+        type=str,
+        default="",
+        help='BPF filter string (e.g., "tcp", "not port 22")'
+    )
+    parser.add_argument(
+        "--count", "-c",
+        type=int,
+        default=0,
+        help="Max packets to capture (0 = infinite)"
+    )
+    parser.add_argument(
+        "--port", "-p",
+        type=int,
+        default=DASHBOARD_PORT,
+        help=f"Dashboard port (default: {DASHBOARD_PORT})"
+    )
     return parser.parse_args()
 
 
 def check_root():
     if os.geteuid() != 0:
-        logger.error("Capture/detect modes require root.")
-        logger.error("Run: sudo venv/bin/python3 main.py --mode detect")
+        logger.error("This mode requires root privileges for raw packet capture.")
+        logger.error("Run: sudo venv/bin/python3 main.py")
         sys.exit(1)
 
 
 def main():
     args = parse_arguments()
 
-    if args.mode in ("capture", "detect"):
+    if args.mode == "dashboard":
         check_root()
+        from src.dashboard.app import run_dashboard
+        run_dashboard(
+            interface=args.interface,
+            packet_filter=args.filter,
+            port=args.port,
+        )
 
-        if args.mode == "detect":
-            # Load models first
-            from src.detection.detector     import RealTimeDetector
-            from src.detection.alert_engine import AlertEngine
+    elif args.mode == "detect":
+        check_root()
+        from src.detection.detector     import RealTimeDetector
+        from src.detection.alert_engine import AlertEngine
+        from src.sniffer.packet_capture import PacketCapture
 
-            detector     = RealTimeDetector()
-            alert_engine = AlertEngine()
+        detector     = RealTimeDetector()
+        alert_engine = AlertEngine()
 
-            if not detector.load_models():
-                logger.error("Cannot start detection — models missing.")
-                logger.error("Run: python3 main.py --mode train")
-                sys.exit(1)
+        if not detector.load_models():
+            logger.error("Models missing. Run: python3 main.py --mode train")
+            sys.exit(1)
 
-            from src.sniffer.packet_capture import PacketCapture
-            sniffer = PacketCapture(
-                interface=args.interface,
-                packet_filter=args.filter,
-                packet_count=args.count,
-                mode="detect",
-                detector=detector,
-                alert_engine=alert_engine,
-            )
-        else:
-            from src.sniffer.packet_capture import PacketCapture
-            sniffer = PacketCapture(
-                interface=args.interface,
-                packet_filter=args.filter,
-                packet_count=args.count,
-                mode="capture",
-            )
+        PacketCapture(
+            interface=args.interface,
+            packet_filter=args.filter,
+            packet_count=args.count,
+            mode="detect",
+            detector=detector,
+            alert_engine=alert_engine,
+        ).start()
 
-        sniffer.start()
+    elif args.mode == "capture":
+        check_root()
+        from src.sniffer.packet_capture import PacketCapture
+        PacketCapture(
+            interface=args.interface,
+            packet_filter=args.filter,
+            packet_count=args.count,
+            mode="capture",
+        ).start()
 
     elif args.mode == "preprocess":
         from scripts.preprocess_data import main as run

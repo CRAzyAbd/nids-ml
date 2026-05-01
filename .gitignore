@@ -33,3 +33,4 @@ data/processed/
 models/*.joblib
 models/*.pkl
 captured_data/
+logs/*.csv
