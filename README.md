@@ -50,34 +50,34 @@ Trained **only on BENIGN traffic** — detects anomalies without ever seeing lab
 
 <pre>
 Live Traffic
-│
-▼
+      │
+      ▼
 ┌─────────────┐
 │   Scapy     │  ← Raw packet capture (Layer 2/3/4)
 │  Sniffer    │
 └──────┬──────┘
-│ per-packet features
-▼
+       │ per-packet features
+       ▼
 ┌─────────────┐
 │    Flow     │  ← Groups packets into 5-tuple conversations
 │   Tracker   │     (src_ip, src_port, dst_ip, dst_port, proto)
 └──────┬──────┘
-│ 36 statistical features per flow
-▼
+       │ 36 statistical features per flow
+       ▼
 ┌──────────────────────────────────┐
 │         Feature Extractor        │
 │  volume · timing · IAT · flags   │
 │  byte ratios · port categories   │
 └──────┬───────────────────┬───────┘
-│                   │
-▼                   ▼
+       │                   │
+       ▼                   ▼
 ┌─────────────┐    ┌──────────────────┐
 │   Random    │    │    Isolation     │
 │   Forest    │    │     Forest       │
 │  (labeled)  │    │  (anomaly score) │
 └──────┬──────┘    └────────┬─────────┘
-│                    │
-▼                    ▼
+       │                    │
+       ▼                    ▼
 Attack Type          NORMAL / ANOMALY
 
 Confidence         + Anomaly Score
