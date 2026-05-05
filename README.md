@@ -54,44 +54,44 @@ Trained **only on BENIGN traffic** — detects zero-day attacks it has never see
 
 <pre>
 Live Traffic (wlo1 / eth0)
-│
-▼
+	 │
+	 ▼
 ┌─────────────────┐
 │  Scapy Sniffer  │  Raw packet capture at Layer 2
 └────────┬────────┘
-│ per-packet features
-▼
+	 │ per-packet features
+	 ▼
 ┌─────────────────┐
 │  Flow Tracker   │  Groups packets into 5-tuple flows
 │  (5-tuple)      │  (src_ip, src_port, dst_ip, dst_port, proto)
 └────────┬────────┘
-│ completed flow
-▼
+	 │ completed flow
+	 ▼
 ┌─────────────────────────────────┐
 │       Feature Extractor         │
 │  36 statistical features:       │
 │  volume · timing · IAT · flags  │
 │  byte ratios · packet lengths   │
 └──────────┬──────────────────────┘
-│
-┌──────┴──────┐
-▼             ▼
+	   │
+    ┌──────┴──────┐
+    ▼             ▼
 ┌────────┐  ┌──────────────┐
 │  RF    │  │  Isolation   │
 │ (96%)  │  │   Forest     │
 └───┬────┘  └──────┬───────┘
-│              │
-▼              ▼
+    │              │
+    ▼              ▼
 Attack Type   ANOMALY / NORMAL
 
 Confidence  + Anomaly Score
-│              │
-└──────┬───────┘
-▼
-┌─────────────┐
-│   Dashboard │  http://localhost:5001
-│  Flask+WS   │  Live charts + alert feed
-└─────────────┘
+    │              │
+    └──────┬───────┘
+           ▼
+     ┌─────────────┐
+     │   Dashboard │  http://localhost:5001
+     │  Flask+WS   │  Live charts + alert feed
+     └─────────────┘
 </pre>
 
 ---
@@ -176,6 +176,7 @@ python3 scripts/demo_attack.py
 
 ## 📁 Project Structure
 
+<pre>
 nids-project/
 ├── config/
 │   └── settings.py              # All configuration constants
@@ -210,6 +211,7 @@ nids-project/
 ├── setup.sh                     # One-command setup
 ├── main.py                      # Entry point
 └── requirements.txt
+</pre>
 
 ---
 
