@@ -100,7 +100,7 @@ Confidence         + Anomaly Score
 
 ---
 
-## 🏗️ Project Phases
+## 🏗️ Project Milestones
 
 | Component | Description | Status |
 |-------|-------------|--------|
