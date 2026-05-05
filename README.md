@@ -108,8 +108,8 @@ Confidence         + Anomaly Score
 | 2 | Feature Engineering — flow tracking, 36 statistical features | ✅ Complete |
 | 3 | Dataset & Preprocessing — CICIDS-2017, EDA, scaling | ✅ Complete |
 | 4 | ML Training — Random Forest + Isolation Forest | ✅ Complete |
-| 5 | Real-Time Detection — live model inference on captured flows | 🔜 Upcoming |
-| 6 | Dashboard — Flask web UI with live alerts | 🔜 Upcoming |
+| 5 | Real-Time Detection — live model inference on captured flows | ✅ Complete |
+| 6 | Dashboard — Flask web UI with live alerts | ✅ Complete |
 | 7 | Polish — packaging, demo, final docs | 🔜 Upcoming |
 
 ---
