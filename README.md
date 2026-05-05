@@ -3,7 +3,6 @@
 A real-time Network Intrusion Detection System built with **Python**, **Scapy**, and **scikit-learn**.  
 Captures live network packets, extracts flow-level statistical features, and uses machine learning to detect and classify network attacks.
 
-> **Cybersecurity portfolio project — B.Tech Cyber Security & Digital Forensics, VIT Bhopal**
 
 ---
 
