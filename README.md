@@ -102,7 +102,7 @@ Confidence         + Anomaly Score
 
 ## 🏗️ Project Phases
 
-| Phase | Description | Status |
+| Component | Description | Status |
 |-------|-------------|--------|
 | 1 | Foundation — Scapy sniffer, logger, project structure | ✅ Complete |
 | 2 | Feature Engineering — flow tracking, 36 statistical features | ✅ Complete |

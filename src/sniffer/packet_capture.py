@@ -1,9 +1,9 @@
 # src/sniffer/packet_capture.py
 """
-Live packet capture — Phase 5 update.
+Live packet capture — Updated sniffer.
 Supports two modes:
-  mode="capture" : Phase 1/2 behaviour — capture + save flows to CSV
-  mode="detect"  : Phase 5 — capture + classify flows in real time
+  mode="capture" : capture mode behaviour — capture + save flows to CSV
+  mode="detect"  :  capture + classify flows in real time
 """
 
 import csv

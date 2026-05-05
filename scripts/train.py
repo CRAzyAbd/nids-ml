@@ -1,6 +1,6 @@
 # scripts/train.py
 """
-Full model training pipeline for NIDS Phase 4.
+Full model training pipeline for NIDS .
 
 Loads preprocessed data → trains RF + IF → evaluates → saves models + charts.
 
@@ -37,7 +37,7 @@ logger = setup_logger(__name__, LOG_FILE, LOG_LEVEL)
 
 
 def load_processed_data():
-    """Load the train/test CSVs produced by Phase 3 preprocessor."""
+    """Load the train/test CSVs produced by  preprocessor."""
     train_path = os.path.join(PROCESSED_DATA_DIR, "features_train.csv")
     test_path  = os.path.join(PROCESSED_DATA_DIR, "features_test.csv")
     names_path = os.path.join(PROCESSED_DATA_DIR, "label_names.csv")
@@ -73,7 +73,7 @@ def load_processed_data():
 
 def main():
     logger.info("=" * 65)
-    logger.info("  NIDS — Phase 4: Model Training")
+    logger.info("  NIDS — NIDS — Model Training")
     logger.info("=" * 65)
 
     os.makedirs(MODELS_DIR, exist_ok=True)
@@ -154,7 +154,7 @@ def main():
     logger.info(f"    False Alarms : {iso_metrics['false_alarm_rate']*100:.1f}% of benign")
     logger.info(f"\n  Models saved to  : {MODELS_DIR}/")
     logger.info(f"  Charts saved to  : data/reports/")
-    logger.info("\n  Ready for Phase 5 — Real-Time Detection!")
+    logger.info("\n  Ready for Real-Time Detection ready!")
     logger.info("=" * 65)
 
 

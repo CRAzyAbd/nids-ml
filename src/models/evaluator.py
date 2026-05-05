@@ -165,7 +165,7 @@ def save_training_report(rf_metrics: dict,
 
     lines = [
         "=" * 65,
-        "  NIDS — Phase 4 Training Report",
+        "  NIDS —  Training Report",
         "=" * 65,
         "",
         "── RANDOM FOREST (Supervised Multiclass) ─────────────────",

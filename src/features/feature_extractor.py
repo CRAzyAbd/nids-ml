@@ -214,7 +214,7 @@ def extract_features(flow) -> dict:
         "is_well_known_port": int(flow.dst_port < 1024 and flow.dst_port > 0),
         "dst_port_category": dst_port_cat,   # string — for display only
 
-        # ── Label (to be filled by training pipeline in Phase 4) ──
+        # ── Label (to be filled by training pipeline in ) ──
         "label": "UNKNOWN",
     }
 

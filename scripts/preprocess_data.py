@@ -18,7 +18,7 @@ def main():
     print(f"Features: {result['X_train'].shape[1]}")
     print(f"Classes: {result['label_names']}")
     print(f"\nSaved to: {PROCESSED_DATA_DIR}/")
-    print("\nReady for Phase 4!")
+    print("\nPreprocessing complete — ready to train!")
 
 if __name__ == "__main__":
     main()

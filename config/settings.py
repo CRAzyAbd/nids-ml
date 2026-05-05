@@ -45,7 +45,7 @@ FLOWS_DATA_DIR    = os.path.join(BASE_DIR, "captured_data", "flows")
 STATS_INTERVAL        = 50
 FLOW_DISPLAY_INTERVAL = 10
 
-# ─── Dataset Paths (Phase 3) ─────────────────────────────────────
+# ─── Dataset Paths () ─────────────────────────────────────
 DATA_DIR           = os.path.join(BASE_DIR, "data")
 RAW_DATA_DIR       = os.path.join(DATA_DIR, "raw", "MachineLearningCVE")
 PROCESSED_DATA_DIR = os.path.join(DATA_DIR, "processed")
@@ -63,13 +63,13 @@ CICIDS_FILES = [
     "Thursday-WorkingHours-Afternoon-Infilteration.pcap_ISCX.csv",
 ]
 
-# ─── Preprocessing (Phase 3) ─────────────────────────────────────
+# ─── Preprocessing () ─────────────────────────────────────
 TEST_SIZE        = 0.20
 RANDOM_STATE     = 42
 MAX_BENIGN_ROWS  = 100_000
 MAX_ATTACK_ROWS  = 20_000
 
-# ─── Models (Phase 4) ────────────────────────────────────────────
+# ─── Models () ────────────────────────────────────────────
 MODELS_DIR        = os.path.join(BASE_DIR, "models")
 SCALER_PATH       = os.path.join(MODELS_DIR, "scaler.joblib")
 ENCODER_PATH      = os.path.join(MODELS_DIR, "label_encoder.joblib")
