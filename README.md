@@ -54,26 +54,26 @@ Trained **only on BENIGN traffic** — detects zero-day attacks it has never see
 
 <pre>
 Live Traffic (wlo1 / eth0)
-	 │
-	 ▼
+	     │
+    	 ▼
 ┌─────────────────┐
 │  Scapy Sniffer  │  Raw packet capture at Layer 2
 └────────┬────────┘
-	 │ per-packet features
-	 ▼
+    	 │ per-packet features
+	     ▼
 ┌─────────────────┐
 │  Flow Tracker   │  Groups packets into 5-tuple flows
 │  (5-tuple)      │  (src_ip, src_port, dst_ip, dst_port, proto)
 └────────┬────────┘
-	 │ completed flow
-	 ▼
+    	 │ completed flow
+	     ▼
 ┌─────────────────────────────────┐
 │       Feature Extractor         │
 │  36 statistical features:       │
 │  volume · timing · IAT · flags  │
 │  byte ratios · packet lengths   │
 └──────────┬──────────────────────┘
-	   │
+	       │
     ┌──────┴──────┐
     ▼             ▼
 ┌────────┐  ┌──────────────┐
