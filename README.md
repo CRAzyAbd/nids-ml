@@ -1,4 +1,4 @@
-# 🛡️ NIDS — Network Intrusion Detection System
+Alerts View# 🛡️ NIDS — Network Intrusion Detection System
 
 A real-time Network Intrusion Detection System built with **Python**, **Scapy**, and **scikit-learn**. Captures live network packets, extracts flow-level statistical features, and uses machine learning to detect and classify network attacks — all visualized in a live web dashboard.
 
@@ -9,9 +9,9 @@ A real-time Network Intrusion Detection System built with **Python**, **Scapy**,
 
 ## 🖥️ Live Dashboard
 
-![NIDS Dashboard — Overview](assets/screenshots/dashboard-overview.png)
+![NIDS Dashboard — Overview](assets/screenshots/dashboard-alerts.png)
 
-| Overview | Alerts View |
+| Alerts View | Overview |
 |----------|-------------|
 | ![Overview](assets/screenshots/dashboard-overview.png) | ![Alerts](assets/screenshots/dashboard-alerts.png) |
 
