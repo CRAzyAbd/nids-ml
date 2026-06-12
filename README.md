@@ -9,7 +9,17 @@ A real-time Network Intrusion Detection System built with **Python**, **Scapy**,
 
 ## 🖥️ Live Dashboard
 
-![NIDS Dashboard](docs/images/dashboard.png)
+![NIDS Dashboard — Overview](assets/screenshots/dashboard-overview.png)
+
+| Overview | Alerts View |
+|----------|-------------|
+| ![Overview](assets/screenshots/dashboard-overview.png) | ![Alerts](assets/screenshots/dashboard-alerts.png) |
+
+| Flows View | Model Info |
+|------------|------------|
+| ![Flows](assets/screenshots/dashboard-flows.png) | ![Model](assets/screenshots/dashboard-model.png) |
+
+> Dark/light theme · Collapsible sidebar · Live EKG vitals · Threat storm mode
 
 ---
 
